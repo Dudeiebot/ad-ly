@@ -1,0 +1,12 @@
+package config
+
+import "github.com/joho/godotenv"
+
+func LoadEnvironmentVariable() error {
+	_ = godotenv.Load()
+
+	err := loadAppEnv()
+	if err != nil {
+		return err
+	}
+}
