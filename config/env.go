@@ -9,4 +9,11 @@ func LoadEnvironmentVariable() error {
 	if err != nil {
 		return err
 	}
+
+	err = loadDbEnv()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
