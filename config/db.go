@@ -1,12 +1,22 @@
 package config
 
 import (
+	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"os"
+
+	"github.com/redis/go-redis/v9"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-var dbConfig DB
+var (
+	dbConfig DB
+	PostDb   *gorm.DB
+	Redis    *redis.Client
+)
 
 type DB struct {
 	DBName      string
@@ -87,5 +97,58 @@ func loadDbEnv() error {
 		RedisAddr:   fmt.Sprintf("%s:%s", redisHost, redisPort),
 	}
 
+	return nil
+}
+
+func ConnectPostGres(cfg *DB) error {
+	dsn := fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		cfg.DBHost, cfg.DBPort, cfg.DBUsername, cfg.DBPassword, cfg.DBName,
+	)
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return err
+	}
+
+	PostDb = db
+
+	return nil
+}
+
+func ConnectRedis(cfg *DB) error {
+	var client *redis.Client
+
+	if cfg.RedisScheme == "tls" {
+		client = redis.NewClient(&redis.Options{
+			Addr:       fmt.Sprintf("%s:%s", cfg.RedisHost, cfg.RedisPort),
+			Password:   cfg.RedisPass,
+			DB:         0,
+			TLSConfig:  &tls.Config{},
+			MaxRetries: 3,
+		})
+	} else {
+		client = redis.NewClient(&redis.Options{
+			Addr:       fmt.Sprintf("%s:%s", cfg.RedisHost, cfg.RedisPort),
+			Password:   cfg.RedisPass,
+			DB:         0,
+			MaxRetries: 3,
+		})
+	}
+
+	_, err := client.Ping(context.Background()).Result()
+	if err != nil {
+		return err
+	}
+
+	Redis = client
+
+	connectionInfo := fmt.Sprintf(
+		"%s:%s, %s, %s",
+		dbConfig.RedisHost,
+		dbConfig.RedisPort,
+		dbConfig.RedisUser,
+		dbConfig.RedisPass,
+	)
+	fmt.Println("connected to redis", connectionInfo)
 	return nil
 }

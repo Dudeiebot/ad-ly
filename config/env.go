@@ -15,5 +15,10 @@ func LoadEnvironmentVariable() error {
 		return err
 	}
 
+	err = loadMailEnv()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

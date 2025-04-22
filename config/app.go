@@ -12,6 +12,7 @@ type App struct {
 	AppKey          string
 	Env             string
 	AsynqmonService string
+	AppHost         string
 }
 
 func loadAppEnv() error {
@@ -35,11 +36,17 @@ func loadAppEnv() error {
 		return errors.New("ENV is not set")
 	}
 
+	appHost, exists := os.LookupEnv("APP_HOST")
+	if !exists {
+		return errors.New("APP_HOST is not set in .env")
+	}
+
 	AppConfig = App{
 		AppName:         appName,
 		AppKey:          appKey,
 		Env:             env,
 		AsynqmonService: asynqmonService,
+		AppHost:         appHost,
 	}
 
 	return nil
