@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	dbConfig DB
+	DbConfig DB
 	PostDb   *gorm.DB
 	Redis    *redis.Client
 )
@@ -83,7 +83,7 @@ func loadDbEnv() error {
 		return errors.New("REDIS_SCHEME not in .env")
 	}
 
-	dbConfig = DB{
+	DbConfig = DB{
 		DBName:      dbName,
 		DBPassword:  dBPassword,
 		DBUsername:  dBUsername,
@@ -144,10 +144,10 @@ func ConnectRedis(cfg *DB) error {
 
 	connectionInfo := fmt.Sprintf(
 		"%s:%s, %s, %s",
-		dbConfig.RedisHost,
-		dbConfig.RedisPort,
-		dbConfig.RedisUser,
-		dbConfig.RedisPass,
+		DbConfig.RedisHost,
+		DbConfig.RedisPort,
+		DbConfig.RedisUser,
+		DbConfig.RedisPass,
 	)
 	fmt.Println("connected to redis", connectionInfo)
 	return nil
