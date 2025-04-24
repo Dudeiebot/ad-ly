@@ -33,7 +33,7 @@ func loadAppEnv() error {
 
 	asynqmonService, exists := os.LookupEnv("ASYNQMON_SERVICE")
 	if !exists {
-		return errors.New("ENV is not set")
+		return errors.New("ASYNQMON_SERVICE is not set")
 	}
 
 	appHost, exists := os.LookupEnv("APP_HOST")
