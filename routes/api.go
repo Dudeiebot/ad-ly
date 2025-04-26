@@ -27,10 +27,10 @@ func Routes() *chi.Mux {
 	hr := hostrouter.New()
 
 	appHost := func() string {
-		if config.AppConfig.AppHost == "" {
+		if config.AppConfig.ApiHost == "" {
 			return "*"
 		}
-		return config.AppConfig.AppHost
+		return config.AppConfig.ApiHost
 	}()
 
 	hr.Map(appHost, apiRoutes())
@@ -64,7 +64,7 @@ func apiRoutes() *chi.Mux {
 	})
 
 	r.Group(func(r chi.Router) {
-		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			_ = json.NewEncoder(w).Encode(helpers.Response("ok", "API IS HEALTHY"))
 
