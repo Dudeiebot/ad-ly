@@ -15,6 +15,13 @@ type App struct {
 	ApiHost         string
 }
 
+func GetApiHost() string {
+	if AppConfig.ApiHost == "" {
+		return "*"
+	}
+	return AppConfig.ApiHost
+}
+
 func loadAppEnv() error {
 	appKey, exists := os.LookupEnv("APP_KEY")
 	if !exists {
