@@ -12,6 +12,7 @@ import (
 	"github.com/go-chi/httprate"
 
 	"github.com/dudeiebot/ad-ly/config"
+	"github.com/dudeiebot/ad-ly/controllers"
 	"github.com/dudeiebot/ad-ly/helpers"
 	customMiddleware "github.com/dudeiebot/ad-ly/middlewares"
 )
@@ -26,14 +27,9 @@ func Routes() *chi.Mux {
 
 	hr := hostrouter.New()
 
-	appHost := func() string {
-		if config.AppConfig.ApiHost == "" {
-			return "*"
-		}
-		return config.AppConfig.ApiHost
-	}()
+	apiHost := config.GetApiHost()
 
-	hr.Map(appHost, apiRoutes())
+	hr.Map(apiHost, apiRoutes())
 
 	r.Mount("/", hr)
 	return r
@@ -69,6 +65,12 @@ func apiRoutes() *chi.Mux {
 			_ = json.NewEncoder(w).Encode(helpers.Response("ok", "API IS HEALTHY"))
 
 			return
+		})
+	})
+
+	r.Group(func(r chi.Router) {
+		r.Route("/auth", func(r chi.Router) {
+			r.Post("/register", controllers.Register)
 		})
 	})
 
