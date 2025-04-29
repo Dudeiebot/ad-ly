@@ -17,7 +17,7 @@ type User struct {
 	UpdatedAt       time.Time
 }
 
-func (u *User) IsEmpty() bool {
+func (u *User) Empty() bool {
 	return u.Id == ""
 }
 
