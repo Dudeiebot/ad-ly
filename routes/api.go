@@ -71,6 +71,8 @@ func apiRoutes() *chi.Mux {
 	r.Group(func(r chi.Router) {
 		r.Route("/auth", func(r chi.Router) {
 			r.Post("/register", controllers.Register)
+			r.Get("/verify-email", controllers.VerifyUser)
+			r.Post("/login", controllers.LoginUser)
 		})
 	})
 
