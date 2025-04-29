@@ -99,7 +99,7 @@ func (s *postmarkSender) Send(to, subject string, body []byte, attachments []*At
 }
 
 func renderEmailTemplate(name string, data map[string]interface{}) (string, error) {
-	tmpl, err := template.ParseFiles(fmt.Sprintf("./templates/emails/%s.html", name))
+	tmpl, err := template.ParseFiles(fmt.Sprintf("./templates/email/%s.html", name))
 	if err != nil {
 		return "", err
 	}
@@ -108,6 +108,7 @@ func renderEmailTemplate(name string, data map[string]interface{}) (string, erro
 	if err := tmpl.Execute(buf, data); err != nil {
 		return "", err
 	}
+
 	return buf.String(), nil
 }
 
