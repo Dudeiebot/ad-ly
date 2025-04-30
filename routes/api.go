@@ -76,5 +76,12 @@ func apiRoutes() *chi.Mux {
 		})
 	})
 
+	r.Group(func(r chi.Router) {
+		r.Use(customMiddleware.AuthenticateUser)
+		r.Route("/user", func(r chi.Router) {
+			r.Get("/get-user", controllers.GetUser)
+		})
+	})
+
 	return r
 }
