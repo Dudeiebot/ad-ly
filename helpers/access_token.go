@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -30,4 +31,22 @@ func GenerateAccessToken(ctx context.Context, userId string) (token string, err 
 	}
 
 	return token, nil
+}
+
+func ParseAccessToken(token string) (string, error) {
+	var tempToken string
+
+	validation, _ := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return []byte(config.AppConfig.AppKey), nil
+	})
+
+	if claims, ok := validation.Claims.(jwt.MapClaims); ok && validation.Valid {
+		tempToken, _ = claims["token"].(string)
+	}
+
+	return tempToken, nil
 }
