@@ -73,6 +73,8 @@ func apiRoutes() *chi.Mux {
 			r.Post("/register", controllers.Register)
 			r.Get("/verify-email", controllers.VerifyUser)
 			r.Post("/login", controllers.LoginUser)
+			r.Post("/forgot-password", controllers.ForgotPassword)
+			r.Post("/post-forgot", controllers.PostForgot)
 		})
 	})
 
