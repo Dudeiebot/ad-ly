@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -14,18 +15,21 @@ import (
 	db "github.com/dudeiebot/ad-ly/config"
 	customizedError "github.com/dudeiebot/ad-ly/errors"
 	"github.com/dudeiebot/ad-ly/helpers"
+	"github.com/dudeiebot/ad-ly/mailer"
 	"github.com/dudeiebot/ad-ly/models"
+	"github.com/dudeiebot/ad-ly/queue"
 	"github.com/dudeiebot/ad-ly/request"
 	"github.com/dudeiebot/ad-ly/responses"
 )
 
-var ctx = context.Background()
+var (
+	ctx  = context.Background()
+	user models.User
+)
 
 func RegisterUser(
 	payload request.Register,
 ) (response responses.AuthResponse, err error, status int) {
-	var user models.User
-
 	_ = db.PostDb.Where("email = ?", payload.Email).Find(&user)
 
 	if !user.Empty() {
@@ -76,7 +80,6 @@ func VerifyUser(token string) (message map[string]string, err error, status int)
 		return nil, helpers.ServerError(err), http.StatusInternalServerError
 	}
 
-	var user models.User
 	err = db.PostDb.Where("id = ?", userId).First(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -99,8 +102,6 @@ func VerifyUser(token string) (message map[string]string, err error, status int)
 func LoginUser(
 	payload request.LoginUser,
 ) (response responses.AuthResponse, err error, status int) {
-	var user models.User
-
 	_ = db.PostDb.Where("email = ?", payload.Email).Find(&user)
 
 	if user.Empty() {
@@ -131,4 +132,70 @@ func LoginUser(
 		Token: token,
 		User:  responses.GenerateUserResponse(user),
 	}, nil, http.StatusOK
+}
+
+func ForgotPassword(
+	payload request.ForgotPassword,
+) (message map[string]string, err error, status int) {
+	_ = db.PostDb.Where("email = ?", payload.Email).First(&user).Error
+	if err != nil {
+		return nil, helpers.ServerError(err), http.StatusBadRequest
+	}
+
+	if !user.Empty() {
+		token := uuid.New().String()
+		err = db.Redis.Set(ctx, "forgot_password_"+token, user.Id, time.Hour*1).Err()
+		if err != nil {
+			return nil, helpers.ServerError(err), http.StatusInternalServerError
+		}
+
+		apiHost := db.GetApiHost()
+
+		err = mailer.EnqueueEmailTask(queue.Client, mailer.EmailPayload{
+			TemplateName: "forget_password",
+			To:           user.Email,
+			Subject:      "Reset Your Password",
+			Data: map[string]interface{}{
+				"password_reset": fmt.Sprintf("%s/auth/password_reset?token=%s", apiHost, token),
+				"Name":           user.Name,
+			},
+		})
+		if err != nil {
+			return nil, helpers.ServerError(err), http.StatusInternalServerError
+		}
+	}
+	return helpers.Message("Check Your Email"), nil, http.StatusOK
+}
+
+func PostForgot(payload request.PostForgot) (message map[string]string, err error, status int) {
+	redisKey := "forgot_password_" + payload.Token
+
+	userId, err := db.Redis.Get(ctx, redisKey).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return nil, errors.New("invalid token"), http.StatusNotAcceptable
+		}
+		return nil, helpers.ServerError(err), http.StatusInternalServerError
+	}
+
+	_ = db.PostDb.Where("id = ?", userId).First(&user).Error
+	if err != nil {
+		return nil, helpers.ServerError(err), http.StatusInternalServerError
+	}
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, helpers.ServerError(err), http.StatusInternalServerError
+	}
+
+	err = db.PostDb.Model(&user).Updates(map[string]interface{}{"password": hashedPassword}).Error
+	if err != nil {
+		return nil, helpers.ServerError(err), http.StatusInternalServerError
+	}
+
+	err = db.Redis.Del(ctx, redisKey).Err()
+	if err != nil {
+		return nil, helpers.ServerError(err), http.StatusInternalServerError
+	}
+
+	return helpers.Message("Password Reset Completed"), nil, http.StatusOK
 }
