@@ -83,6 +83,9 @@ func apiRoutes() *chi.Mux {
 		r.Route("/user", func(r chi.Router) {
 			r.Get("/get-user", controllers.GetUser)
 		})
+		r.Route("/links", func(r chi.Router) {
+			r.Post("/urls", controllers.GenerateCode)
+		})
 	})
 
 	return r
