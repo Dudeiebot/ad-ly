@@ -8,13 +8,23 @@ import (
 
 type User struct {
 	gorm.Model
-	Id              string
+	Id              string `gorm:"primaryKey"`
 	Name            string
 	Password        string
 	Email           string
 	EmailVerifiedAt *time.Time
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
+	Links           []Link `gorm:"foreignKey:UserId;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+}
+
+type Link struct {
+	Code      string `gorm:"primaryKey"`
+	UserId    string
+	Url       string
+	ExpireAt  *time.Time
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 func (u *User) Empty() bool {
@@ -29,4 +39,11 @@ func (u *User) EmailVerified() bool {
 		return true
 	}
 	return false
+}
+
+func (l *Link) Expired() bool {
+	if l.ExpireAt == nil || l.ExpireAt.IsZero() {
+		return false
+	}
+	return time.Now().After(*l.ExpireAt)
 }
