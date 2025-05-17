@@ -88,5 +88,11 @@ func apiRoutes() *chi.Mux {
 		})
 	})
 
+	r.Group(func(r chi.Router) {
+		r.Route("/client", func(r chi.Router) {
+			r.Get("/get-url", controllers.GetUrl)
+		})
+	})
+
 	return r
 }
