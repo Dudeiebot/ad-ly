@@ -17,7 +17,7 @@ import (
 )
 
 func GenerateCode(
-	payload request.GetCode,
+	payload request.GenerateCode,
 	r *http.Request,
 ) (response responses.LinkResponse, err error, status int) {
 	userId := middlewares.GetUser(r.Context()).Id
@@ -87,4 +87,29 @@ func GenerateCode(
 		Code:      payload.CustomCode,
 		ExpiresAt: &expiresTime,
 	}, nil, http.StatusOK
+}
+
+func GetUrl(code string) (response responses.UrlResponse, err error, status int) {
+	var link models.Link
+	urlKey := "url_key_" + code
+	ctx := context.Background()
+
+	url, err := config.Redis.Get(ctx, urlKey).Result()
+	if err != nil && err != redis.Nil {
+		return response, helpers.ServerError(err), http.StatusInternalServerError
+	}
+	if err == nil {
+		return responses.UrlResponse{
+			Url: url,
+		}, nil, http.StatusTemporaryRedirect
+	}
+
+	err = config.PostDb.Where("code = ?", code).Find(&link).Error
+	if err != nil {
+		return response, helpers.ServerError(err), http.StatusInternalServerError
+	}
+
+	return responses.UrlResponse{
+		Url: link.Url,
+	}, nil, http.StatusTemporaryRedirect
 }
