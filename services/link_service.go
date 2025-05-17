@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -98,6 +99,7 @@ func GetUrl(code string) (response responses.UrlResponse, err error, status int)
 	if err != nil && err != redis.Nil {
 		return response, helpers.ServerError(err), http.StatusInternalServerError
 	}
+	fmt.Printf("From Redis: %s", url)
 	if err == nil {
 		return responses.UrlResponse{
 			Url: url,
@@ -108,7 +110,8 @@ func GetUrl(code string) (response responses.UrlResponse, err error, status int)
 	if err != nil {
 		return response, helpers.ServerError(err), http.StatusInternalServerError
 	}
-	if link.Expired() {
+	fmt.Printf("Link Expired: %s", link.Expired())
+	if !link.Expired() {
 		return response, customizedError.ErrLinkExpired, http.StatusBadRequest
 	}
 
