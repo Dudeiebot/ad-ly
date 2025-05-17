@@ -10,4 +10,5 @@ var (
 	ErrCantSendVerificationMail = errors.New("Cant Resend Verification Mail")
 	ErrCodeAlreadyExist         = errors.New("Change Custom Code, It Already Exists")
 	ErrUrlAlreadyExist          = errors.New("Url Already Exist")
+	ErrLinkExpired              = errors.New("The Link Have Already Expired")
 )

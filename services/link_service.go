@@ -104,9 +104,12 @@ func GetUrl(code string) (response responses.UrlResponse, err error, status int)
 		}, nil, http.StatusTemporaryRedirect
 	}
 
-	err = config.PostDb.Where("code = ?", code).Find(&link).Error
+	err = config.PostDb.Where("code = ?", code).First(&link).Error
 	if err != nil {
 		return response, helpers.ServerError(err), http.StatusInternalServerError
+	}
+	if link.Expired() {
+		return response, customizedError.ErrLinkExpired, http.StatusBadRequest
 	}
 
 	return responses.UrlResponse{
