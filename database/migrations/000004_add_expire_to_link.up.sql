@@ -1,0 +1,2 @@
+ALTER TABLE links
+ADD COLUMN expire_at TIMESTAMP;

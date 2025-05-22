@@ -1,0 +1,2 @@
+ALTER TABLE links
+ADD COLUMN custom_code VARCHAR;

@@ -1,0 +1,8 @@
+CREATE TABLE links (
+  code VARCHAR PRIMARY KEY,
+  custom_code VARCHAR,
+  user_id VARCHAR REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  created_at TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP NOT NULL,
+  deleted_at TIMESTAMP
+);
