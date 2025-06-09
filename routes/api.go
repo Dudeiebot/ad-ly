@@ -5,16 +5,15 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/dudeiebot/ad-ly/config"
+	"github.com/dudeiebot/ad-ly/controllers"
+	"github.com/dudeiebot/ad-ly/helpers"
+	customMiddleware "github.com/dudeiebot/ad-ly/middlewares"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/hostrouter"
 	"github.com/go-chi/httprate"
-
-	"github.com/dudeiebot/ad-ly/config"
-	"github.com/dudeiebot/ad-ly/controllers"
-	"github.com/dudeiebot/ad-ly/helpers"
-	customMiddleware "github.com/dudeiebot/ad-ly/middlewares"
 )
 
 func Routes() *chi.Mux {
