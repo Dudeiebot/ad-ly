@@ -66,4 +66,4 @@ The goal of this system is to **convert long URLs into short, unique, and retrie
 
 ---
 
-> ⚙️ This is a conceptual overview for normal and somp business purposes. but more detailed implementation may vary based on business needs and traffic scale.
+> ⚙️ This is a conceptual overview for normal and some business purposes. but more detailed implementation may vary based on business needs and traffic scale.
